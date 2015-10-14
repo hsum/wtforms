@@ -61,7 +61,7 @@ For better date-time parsing using the `python-dateutil`_  package,
 :mod:`wtforms.ext.dateutil` provides a set of fields to use to accept a wider
 range of date input. 
 
-.. _python-dateutil: http://labix.org/python-dateutil
+.. _python-dateutil: https://dateutil.readthedocs.org/
 
 .. autoclass:: DateTimeField(default field arguments, parse_kwargs=None, display_format='%Y-%m-%d %H:%M')
 
@@ -86,7 +86,7 @@ Templatetags
 ~~~~~~~~~~~~
 .. module:: wtforms.ext.django.templatetags.wtforms
 
-Django templates does not allow arbitrarily calling functions with parameters,
+Django templates do not allow arbitrarily calling functions with parameters,
 making it impossible to use the html attribute rendering feature of WTForms. To
 alleviate this, we provide a templatetag.
 
