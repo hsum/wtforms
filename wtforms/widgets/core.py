@@ -283,8 +283,8 @@ class Select(object):
         if self.multiple:
             kwargs['multiple'] = True
         html = ['<select %s>' % html_params(name=field.name, **kwargs)]
-        for val, label, selected in field.iter_choices():
-            html.append(self.render_option(val, label, selected))
+        for oc in field.iter_choices():
+            html.append(self.render_option(oc.value, oc.label, oc.selected, **oc.extra))
         html.append('</select>')
         return HTMLString(''.join(html))
 

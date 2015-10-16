@@ -228,6 +228,7 @@ class SelectFieldTest(TestCase):
     class F(Form):
         a = SelectField(choices=[('a', 'hello'), ('btest', 'bye')], default='a')
         b = SelectField(choices=[(1, 'Item 1'), (2, 'Item 2')], coerce=int, option_widget=widgets.TextInput())
+        c = SelectField(choices=[('a', 'hello', False, {'data-image': 'hello-icon'}), ('b', 'bye', False, {'data-image': 'bye-icon'})], default='a')
 
     def test_defaults(self):
         form = self.F()
@@ -236,6 +237,7 @@ class SelectFieldTest(TestCase):
         self.assertEqual(form.validate(), False)
         self.assertEqual(form.a(), """<select id="a" name="a"><option selected value="a">hello</option><option value="btest">bye</option></select>""")
         self.assertEqual(form.b(), """<select id="b" name="b"><option value="1">Item 1</option><option value="2">Item 2</option></select>""")
+        self.assertEqual(form.c(), """<select id="c" name="c"><option data-image="hello-icon" selected value="a">hello</option><option data-image="bye-icon" value="b">bye</option></select>""")
 
     def test_with_data(self):
         form = self.F(DummyPostData(a=['btest']))
@@ -283,12 +285,12 @@ class SelectMultipleFieldTest(TestCase):
         # Test for possible regression with null data
         form.a.data = None
         self.assertTrue(form.validate())
-        self.assertEqual(list(form.a.iter_choices()), [(v, l, False) for v, l in form.a.choices])
+        self.assertEqual(list(form.a.iter_choices()), [(v, l, False, {}) for v, l in form.a.choices])
 
     def test_with_data(self):
         form = self.F(DummyPostData(a=['a', 'c']))
         self.assertEqual(form.a.data, ['a', 'c'])
-        self.assertEqual(list(form.a.iter_choices()), [('a', 'hello', True), ('b', 'bye', False), ('c', 'something', True)])
+        self.assertEqual(list(form.a.iter_choices()), [('a', 'hello', True, {}), ('b', 'bye', False, {}), ('c', 'something', True, {})])
         self.assertEqual(form.b.data, [])
         form = self.F(DummyPostData(b=['1', '2']))
         self.assertEqual(form.b.data, [1, 2])

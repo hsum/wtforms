@@ -4,6 +4,7 @@ from unittest import TestCase
 from wtforms.widgets import html_params, Input
 from wtforms.widgets import *
 from wtforms.widgets import html5
+from wtforms.fields import OptionChoice
 
 
 class DummyField(object):
@@ -19,7 +20,8 @@ class DummyField(object):
     __str__ = lambda x: x.data
     __call__ = lambda x, **k: x.data
     __iter__ = lambda x: iter(x.data)
-    iter_choices = lambda x: iter(x.data)
+    #iter_choices = lambda x: iter(x.data)
+    iter_choices = lambda x: (OptionChoice(*c) for c in x.data)
 
 
 class HTMLParamsTest(TestCase):
