@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime
 import decimal
 import itertools
+import collections
 
 from wtforms import widgets
 from wtforms.compat import text_type, izip
@@ -17,6 +18,14 @@ __all__ = (
     'SelectMultipleField', 'StringField',
 )
 
+class OptionChoice(collections.namedtuple(
+    'OptionChoice', ('value', 'label', 'selected', 'extra')
+)):
+    def __new__(cls, value, label, selected = False, extra = None):
+        if extra is None:
+            extra = {}
+
+        return super(OptionChoice, cls).__new__(cls, value, label, selected, extra)
 
 class Field(object):
     """
@@ -426,10 +435,10 @@ class SelectFieldBase(Field):
 
     def __iter__(self):
         opts = dict(widget=self.option_widget, _name=self.name, _form=None, _meta=self.meta)
-        for i, (value, label, checked) in enumerate(self.iter_choices()):
-            opt = self._Option(label=label, id='%s-%d' % (self.id, i), **opts)
-            opt.process(None, value)
-            opt.checked = checked
+        for i, oc in enumerate(OptionChoice(*c) for c in self.iter_choices()):
+            opt = self._Option(label=oc.label, id='%s-%d' % (self.id, i), **opts)
+            opt.process(None, oc.value)
+            opt.checked = oc.selected
             yield opt
 
     class _Option(Field):
@@ -445,11 +454,14 @@ class SelectField(SelectFieldBase):
     def __init__(self, label=None, validators=None, coerce=text_type, choices=None, **kwargs):
         super(SelectField, self).__init__(label, validators, **kwargs)
         self.coerce = coerce
-        self.choices = choices
+        if callable(choices):
+            self.choices = choices()
+        else:
+            self.choices = choices
 
     def iter_choices(self):
-        for value, label in self.choices:
-            yield (value, label, self.coerce(value) == self.data)
+        for oc in (OptionChoice(*c) for c in self.choices):
+            yield OptionChoice(oc.value, oc.label, self.coerce(oc.value) == self.data, oc.extra)
 
     def process_data(self, value):
         try:
@@ -481,9 +493,9 @@ class SelectMultipleField(SelectField):
     widget = widgets.Select(multiple=True)
 
     def iter_choices(self):
-        for value, label in self.choices:
-            selected = self.data is not None and self.coerce(value) in self.data
-            yield (value, label, selected)
+        for oc in (OptionChoice(*c) for c in self.choices):
+            selected = self.data is not None and self.coerce(oc.value) in self.data
+            yield OptionChoice(oc.value, oc.label, selected, oc.extra)
 
     def process_data(self, value):
         try:
